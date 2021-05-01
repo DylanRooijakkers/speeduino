@@ -156,11 +156,11 @@ void loop()
       currentStatus.RPMdiv100 = currentStatus.RPM / 100;
       if (stateVialle == 1){
         FUEL_PUMP_OFF();
-        currentStatus.fuelPumpOn = true; //Not sure if this is needed.
+        currentStatus.fuelPumpOn = false; //Not sure if this is needed.
       }
       else {
         FUEL_PUMP_ON();
-        currentStatus.fuelPumpOn = false; //Not sure if this is needed.
+        currentStatus.fuelPumpOn = true; //Not sure if this is needed.
       }
       VIALLE_ON();
     }
