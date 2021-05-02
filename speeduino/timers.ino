@@ -204,7 +204,7 @@ void oneMSInterval() //Most ARM chips can simply call a function
         if(currentStatus.RPM == 0)
         {
           //If we reach here then the priming is complete, however only turn off the fuel pump if the engine isn't running
-          VIALLE_OFF();
+          digitalWrite(pinVialle, LOW);
         }
       }
     }
