@@ -27,6 +27,7 @@ void initialiseAll()
 {   
     fpPrimed = false;
     viallePrimed = false;
+    vialleSwitch = false;
     injPrimed = false;
 
     pinMode(LED_BUILTIN, OUTPUT);
@@ -71,7 +72,6 @@ void initialiseAll()
   #endif
 
     Serial.begin(115200);
-    Serial3.begin(9600);
     #if defined(CANSerial_AVAILABLE)
       if (configPage9.enable_secondarySerial == 1) { CANSerial.begin(115200); }
     #endif
@@ -344,6 +344,7 @@ void initialiseAll()
 
     //Once the configs have been loaded, a number of one time calculations can be completed
     req_fuel_uS = configPage2.reqFuel * 100; //Convert to uS and an int. This is the only variable to be used in calculations
+    req_fuel2_uS = configPage9.reqFuel2 * 100;
     inj_opentime_uS = configPage2.injOpen * 100; //Injector open time. Comes through as ms*10 (Eg 15.5ms = 155).
 
     if(configPage10.stagingEnabled == true)
@@ -403,6 +404,7 @@ void initialiseAll()
     {
       //Default is 1 squirt per revolution, so we halve the given req-fuel figure (Which would be over 2 revolutions)
       req_fuel_uS = req_fuel_uS / 2; //The req_fuel calculation above gives the total required fuel (At VE 100%) in the full cycle. If we're doing more than 1 squirt per cycle then we need to split the amount accordingly. (Note that in a non-sequential 4-stroke setup you cannot have less than 2 squirts as you cannot determine the stroke to make the single squirt on)
+      req_fuel2_uS = req_fuel2_uS / 2;
     }
 
     //Initial values for loop times
@@ -453,6 +455,7 @@ void initialiseAll()
           CRANK_ANGLE_MAX_INJ = 720;
           currentStatus.nSquirts = 1;
           req_fuel_uS = req_fuel_uS * 2;
+          req_fuel2_uS = req_fuel2_uS * 2;
         }
 
         channel1InjEnabled = true;
@@ -480,6 +483,7 @@ void initialiseAll()
           CRANK_ANGLE_MAX_INJ = 720;
           currentStatus.nSquirts = 1;
           req_fuel_uS = req_fuel_uS * 2;
+          req_fuel2_uS = req_fuel2_uS * 2;
         }
         //The below are true regardless of whether this is running sequential or not
         if (configPage2.engineType == EVEN_FIRE ) { channel2InjDegrees = 180; }
@@ -561,6 +565,7 @@ void initialiseAll()
           CRANK_ANGLE_MAX_INJ = 720;
           currentStatus.nSquirts = 1;
           req_fuel_uS = req_fuel_uS * 2;
+          req_fuel2_uS = req_fuel2_uS * 2;
         }
 
         channel1InjEnabled = true;
@@ -630,6 +635,7 @@ void initialiseAll()
           CRANK_ANGLE_MAX_INJ = 720;
           currentStatus.nSquirts = 1;
           req_fuel_uS = req_fuel_uS * 2;
+          req_fuel2_uS = req_fuel2_uS * 2;
         }
 
         //Check if injector staging is enabled
@@ -700,6 +706,7 @@ void initialiseAll()
           CRANK_ANGLE_MAX_INJ = 720;
           currentStatus.nSquirts = 1;
           req_fuel_uS = req_fuel_uS * 2;
+          req_fuel2_uS = req_fuel2_uS * 2;
         }
     #endif
 
@@ -763,6 +770,7 @@ void initialiseAll()
           CRANK_ANGLE_MAX_INJ = 720;
           currentStatus.nSquirts = 1;
           req_fuel_uS = req_fuel_uS * 2;
+          req_fuel2_uS = req_fuel2_uS * 2;
         }
     #endif
 
@@ -842,6 +850,7 @@ void initialiseAll()
           CRANK_ANGLE_MAX_INJ = 720;
           currentStatus.nSquirts = 1;
           req_fuel_uS = req_fuel_uS * 2;
+          req_fuel2_uS = req_fuel2_uS * 2;
         }
     #endif
 
@@ -1174,8 +1183,11 @@ void initialiseAll()
       currentStatus.fuelPumpOn = true;
     }
     else { fpPrimed = true; } //If the user has set 0 for the pump priming, immediately mark the priming as being completed
-
-    VIALLE_ON();
+    if(configPage4.viallePrime > 0)
+    {
+      VIALLE_ON();
+    }
+    else { viallePrimed = true; }
 
     interrupts();
     readCLT(false); // Need to read coolant temp to make priming pulsewidth work correctly. The false here disables use of the filter
@@ -1260,6 +1272,7 @@ void setPinMapping(byte boardID)
       pinVVT_2 = 48; //Default VVT2 output
       pinFuelPump = 4; //Fuel pump output
       pinVialle = 10; //Vialle system output
+      pinVialleSwitch = 15; //Vialle switch pin (Serial3)
       pinStepperDir = 16; //Direction pin  for DRV8825 driver
       pinStepperStep = 17; //Step pin for DRV8825 driver
       pinStepperEnable = 26; //Enable pin for DRV8825
@@ -2460,6 +2473,7 @@ void setPinMapping(byte boardID)
   if ( (configPage4.ignBypassPin != 0) && (configPage4.ignBypassPin < BOARD_MAX_IO_PINS) ) { pinIgnBypass = pinTranslate(configPage4.ignBypassPin); }
   if ( (configPage2.tachoPin != 0) && (configPage2.tachoPin < BOARD_MAX_IO_PINS) ) { pinTachOut = pinTranslate(configPage2.tachoPin); }
   if ( (configPage4.fuelPumpPin != 0) && (configPage4.fuelPumpPin < BOARD_MAX_IO_PINS) ) { pinFuelPump = pinTranslate(configPage4.fuelPumpPin); }
+  //if ( (configPage4.viallePin != 0) && (configPage4.viallePin < BOARD_MAX_IO_PINS) ) { pinVialle = pinTranslate(configPage4.viallePin); }
   if ( (configPage6.fanPin != 0) && (configPage6.fanPin < BOARD_MAX_IO_PINS) ) { pinFan = pinTranslate(configPage6.fanPin); }
   if ( (configPage6.boostPin != 0) && (configPage6.boostPin < BOARD_MAX_IO_PINS) ) { pinBoost = pinTranslate(configPage6.boostPin); }
   if ( (configPage6.vvt1Pin != 0) && (configPage6.vvt1Pin < BOARD_MAX_IO_PINS) ) { pinVVT_1 = pinTranslate(configPage6.vvt1Pin); }
@@ -2612,6 +2626,8 @@ void setPinMapping(byte boardID)
 
   vialle_pin_port = portOutputRegister(digitalPinToPort(pinVialle));
   vialle_pin_mask = digitalPinToBitMask(pinVialle);
+  vialleSwitch_pin_port = portOutputRegister(digitalPinToPort(pinVialleSwitch));
+  vialleSwitch_pin_mask = digitalPinToBitMask(pinVialleSwitch);
 
   //And for inputs
   #if defined(CORE_STM32)
@@ -2672,6 +2688,10 @@ void setPinMapping(byte boardID)
   {
     if (configPage10.spark2InputPullup == true) { pinMode(pinSpark2Input, INPUT_PULLUP); } //With pullup
     else { pinMode(pinSpark2Input, INPUT); } //Normal input
+  }
+  if( (configPage10.fuel2Mode == FUEL2_MODE_SERIAL) || (configPage10.spark2Mode == SPARK2_MODE_SERIAL) )
+  {
+    Serial3.begin(9600);
   }
   if(configPage10.fuelPressureEnable > 0)
   {

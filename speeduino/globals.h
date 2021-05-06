@@ -294,12 +294,14 @@
 #define FUEL2_MODE_ADD      2
 #define FUEL2_MODE_CONDITIONAL_SWITCH   3
 #define FUEL2_MODE_INPUT_SWITCH 4
+#define FUEL2_MODE_SERIAL 5
 
 #define SPARK2_MODE_OFF      0
 #define SPARK2_MODE_MULTIPLY 1
 #define SPARK2_MODE_ADD      2
 #define SPARK2_MODE_CONDITIONAL_SWITCH   3
 #define SPARK2_MODE_INPUT_SWITCH 4
+#define SPARK2_MODE_SERIAL 5
 
 #define FUEL2_CONDITION_RPM 0
 #define FUEL2_CONDITION_MAP 1
@@ -380,6 +382,8 @@
 
   #define VIALLE_ON() *vialle_pin_port |= (vialle_pin_mask)
   #define VIALLE_OFF() *vialle_pin_port &= ~(vialle_pin_mask)
+
+  #define VIALLE_SWITCH() *vialleSwitch_pin_port &= ~(vialleSwitch_pin_mask)
 #else
   //Special compatibility case for TEENSY 41 (for now)
   #define FUEL_PUMP_ON() digitalWrite(pinFuelPump, HIGH);
@@ -477,6 +481,8 @@ extern volatile PINMASK_TYPE pump_pin_mask;
 
 extern volatile PORT_TYPE *vialle_pin_port;
 extern volatile PINMASK_TYPE vialle_pin_mask;
+extern volatile PORT_TYPE *vialleSwitch_pin_port;
+extern volatile PINMASK_TYPE vialleSwitch_pin_mask;
 
 extern volatile PORT_TYPE *flex_pin_port;
 extern volatile PINMASK_TYPE flex_pin_mask;
@@ -530,6 +536,7 @@ extern volatile uint32_t toothHistory[TOOTH_LOG_BUFFER];
 extern volatile uint8_t compositeLogHistory[TOOTH_LOG_BUFFER];
 extern volatile bool fpPrimed; //Tracks whether or not the fuel pump priming has been completed yet
 extern volatile bool viallePrimed;
+extern volatile bool vialleSwitch;
 extern volatile bool injPrimed; //Tracks whether or not the injector priming has been completed yet
 extern volatile unsigned int toothHistoryIndex;
 extern volatile byte toothHistorySerialIndex;
@@ -950,8 +957,9 @@ struct config4 {
   byte ANGLEFILTER_VVT;
 
   byte viallePin : 6;
+  byte viallePrime;
 
-  byte unused4_125[2];
+  byte unused4_126[1];
 
 #if defined(CORE_AVR)
   };
@@ -1094,7 +1102,8 @@ struct config9 {
 
   byte iacMaxSteps; // Step limit beyond which the stepper won't be driven. Should always be less than homing steps. Stored div 3 as per home steps.
 
-  byte unused10_155;
+  byte reqFuel2;
+
   byte unused10_156;
   byte unused10_157;
   byte unused10_158;
@@ -1386,6 +1395,7 @@ extern byte pinDisplayReset; // OLED reset pin
 extern byte pinTachOut; //Tacho output
 extern byte pinFuelPump; //Fuel pump on/off
 extern byte pinVialle; //Vialle system on/off
+extern byte pinVialleSwitch; //Vialle switch pin (Serial3)
 extern byte pinIdle1; //Single wire idle control
 extern byte pinIdle2; //2 wire idle control (Not currently used)
 extern byte pinIdleUp; //Input for triggering Idle Up

@@ -91,6 +91,8 @@ volatile PINMASK_TYPE pump_pin_mask;
 
 volatile PORT_TYPE *vialle_pin_port;
 volatile PINMASK_TYPE vialle_pin_mask;
+volatile PORT_TYPE *vialleSwitch_pin_port;
+volatile PINMASK_TYPE vialleSwitch_pin_mask;
 
 volatile PORT_TYPE *flex_pin_port;
 volatile PINMASK_TYPE flex_pin_mask;
@@ -135,6 +137,7 @@ volatile uint32_t toothHistory[TOOTH_LOG_BUFFER];
 volatile uint8_t compositeLogHistory[TOOTH_LOG_BUFFER];
 volatile bool fpPrimed = false; //Tracks whether or not the fuel pump priming has been completed yet
 volatile bool viallePrimed = false;
+volatile bool vialleSwitch = false;
 volatile bool injPrimed = false; //Tracks whether or not the injectors priming has been completed yet
 volatile unsigned int toothHistoryIndex = 0;
 volatile byte toothHistorySerialIndex = 0;
@@ -206,6 +209,7 @@ byte pinDisplayReset; // OLED reset pin
 byte pinTachOut; //Tacho output
 byte pinFuelPump; //Fuel pump on/off
 byte pinVialle; //Vialle system on/off
+byte pinVialleSwitch; //Vialle switch pin (Serial3)
 byte pinIdle1; //Single wire idle control
 byte pinIdle2; //2 wire idle control (Not currently used)
 byte pinIdleUp; //Input for triggering Idle Up

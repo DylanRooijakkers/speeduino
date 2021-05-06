@@ -198,7 +198,7 @@ void oneMSInterval() //Most ARM chips can simply call a function
     if(viallePrimed == false)
     {
       //fpPrimeTime is the time that the pump priming started. This is 0 on startup, but can be changed if the unit has been running on USB power and then had the ignition turned on (Which starts the priming again)
-      if( (currentStatus.secl - viallePrimeTime) >= 5)
+      if( (currentStatus.secl - viallePrimeTime) >= configPage4.viallePrime )
       {
         viallePrimed = true; //Mark the priming as being completed
         if(currentStatus.RPM == 0)
@@ -208,6 +208,22 @@ void oneMSInterval() //Most ARM chips can simply call a function
         }
       }
     }
+    /*
+    if( ((configPage10.fuel2Mode == FUEL2_MODE_SERIAL) || (configPage10.spark2Mode == SPARK2_MODE_SERIAL)) && (BIT_CHECK(currentStatus.engine, BIT_ENGINE_RUN)) )
+    {
+      if(vialleSwitch == true)
+      {
+        Serial3.begin(9600);
+        //vialleSwitch = false;
+      }
+      else if( (stateVialle == 0) && (currentStatus.coolant >= 30) )
+      {
+        Serial3.end();
+        VIALLE_SWITCH();
+        vialleSwitch = true;
+      } 
+    }
+    */
     //**************************************************************************************************************************************************
     //Set the flex reading (if enabled). The flexCounter is updated with every pulse from the sensor. If cleared once per second, we get a frequency reading
     if(configPage2.flexEnabled == true)

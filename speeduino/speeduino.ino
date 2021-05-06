@@ -67,6 +67,7 @@ int channel7InjDegrees = 0; /**< The number of crank degrees until cylinder 7 is
 int channel8InjDegrees = 0; /**< The number of crank degrees until cylinder 8 is at TDC */
 
 uint16_t req_fuel_uS = 0; /**< The required fuel variable (As calculated by TunerStudio) in uS */
+uint16_t req_fuel2_uS = 0;
 uint16_t inj_opentime_uS = 0;
 
 bool ignitionOn = false; /**< The current state of the ignition system (on or off) */
@@ -422,7 +423,8 @@ void loop()
       //Calculate an injector pulsewidth from the VE
       currentStatus.corrections = correctionsFuel();
 
-      currentStatus.PW1 = PW(req_fuel_uS, currentStatus.VE, currentStatus.MAP, currentStatus.corrections, inj_opentime_uS);
+      if( stateVialle == 1 ){ currentStatus.PW1 = PW(req_fuel2_uS, currentStatus.VE, currentStatus.MAP, currentStatus.corrections, inj_opentime_uS); }
+      else { currentStatus.PW1 = PW(req_fuel_uS, currentStatus.VE, currentStatus.MAP, currentStatus.corrections, inj_opentime_uS); }
 
       //Manual adder for nitrous. These are not in correctionsFuel() because they are direct adders to the ms value, not % based
       if( (currentStatus.nitrous_status == NITROUS_STAGE1) || (currentStatus.nitrous_status == NITROUS_BOTH) )
